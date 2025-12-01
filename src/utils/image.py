@@ -3,3 +3,6 @@ def load_image():
 
 def prepare_image(path):
     pass
+
+def save_image(image):
+    pass
