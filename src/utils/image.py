@@ -1,0 +1,5 @@
+def load_image():
+    pass
+
+def prepare_image(path):
+    pass
