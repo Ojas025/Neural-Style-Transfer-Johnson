@@ -21,13 +21,12 @@ def stylize(config):
     start_time = time.time()
     with torch.no_grad():
         content_image_path = os.path.join("./data/content-images", config["content_image"])
-        content_image = prepare_image(content_image_path, device)
+        content_image = prepare_image(content_image_path, device, config['image_size'], config['batch_size'])
         
         # feedforward
         stylized_image = transformer_net(content_image)
 
-        output_path = os.path.join(config["output_path"], config["output_image"])
-        save_image(stylized_image, output_path)
+        save_image(stylized_image, config)
     
     print("Image Stylized")
     print(f"FeedForward time taken: {time.time() - start_time}")        

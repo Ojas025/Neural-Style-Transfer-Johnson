@@ -1,6 +1,7 @@
 import os
 import argparse
 import time
+import warnings
 
 import torch
 from torch.optim import Adam
@@ -11,6 +12,8 @@ from utils.data import *
 from utils.image import *
 from utils.losses import *
 from utils.utils import *
+
+warnings.filterwarnings('ignore', category=UserWarning)
 
 
 def train(config):
@@ -25,7 +28,7 @@ def train(config):
     optimizer = Adam(transformer_net.parameters(), lr=config['learning_rate'])
     
     # FETCH STYLE IMAGE
-    style_image = prepare_image(style_image_path, device=device)
+    style_image = prepare_image(style_image_path, device, config['image_size'], config['batch_size'])
     
     style_feature_maps = perceptual_loss_net(style_image)
     
@@ -51,25 +54,18 @@ def train(config):
             content_feature_maps = perceptual_loss_net(content_batch)
             current_feature_maps = perceptual_loss_net(current_batch)
             
-            target_content_representation = content_feature_maps[content_layer]
-            current_content_representation = current_feature_maps[content_layer]
-            content_loss = torch.nn.functional.mse_loss(target_content_representation, current_content_representation)
+            # get content loss
+            content_loss = compute_content_loss(content_feature_maps, current_feature_maps, content_layer)
             
-            # calculate gram matrix for current_batch
-            current_style_representation = [
-                gram_matrix(current_feature_maps[layer])
-                for layer in style_layers
-                
-            ]
-            
-            style_loss = 0.0
-            for gram_target, gram_current in zip(target_style_representations, current_style_representation):
-                style_loss += torch.nn.functional.mse_loss(gram_target, gram_current)
-            
-            style_loss /= len(current_style_representation)
+            # get style loss
+            style_loss = compute_style_loss(current_feature_maps, style_layers, target_style_representations)
             
             # calculate total variation loss
             total_variation_loss = compute_total_variation_loss(current_batch)
+            
+            # print("Content Loss: ", content_loss)
+            # print("Style Loss: ", style_loss)
+            # print("Total Variation Loss: ", total_variation_loss)
             
             # calculate total loss
             total_loss = (config['content_weight'] * content_loss) + (config['style_weight'] * style_loss) + (config['total_variation_weight'] * total_variation_loss)
@@ -119,8 +115,10 @@ if __name__ == '__main__':
     batch_size = 4
     image_size = 256
     
-    dataset_path = os.path.join(".", "data", "mscoco", "train2014")
-    style_image_path = os.path.join(".", "data", "style-images", config["style_image"])
+    # dataset_path = os.path.join(".", "data", "mscoco", "train2014")
+    dataset_path = "./src/data/mscoco/train2014"
+    # os.makedirs(dataset_path, exist_ok=True)
+    style_image_path = os.path.join(".", "src", "data", "style-images", config["style_image"])
     
     config['dataset_path'] = dataset_path
     config['batch_size'] = batch_size

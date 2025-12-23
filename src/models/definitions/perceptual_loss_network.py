@@ -26,10 +26,9 @@ class VGG16(nn.Module):
         for index, layer in enumerate(self.vgg):
             x = layer(x)
             
-            if index in self.selected_layers.items():
-                for name, i in {**self.selected_layers}.items():
-                    if index == i:
-                        feature_maps[name] = x
+            for name, i in self.selected_layers.items():
+                if index == i:
+                    feature_maps[name] = x
         
         return feature_maps                        
 
