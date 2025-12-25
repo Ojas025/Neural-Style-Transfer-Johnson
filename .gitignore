@@ -1,2 +1,3 @@
 venv
-.git
+.git__pycache__/
+*.py[cod]

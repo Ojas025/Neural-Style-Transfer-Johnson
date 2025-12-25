@@ -20,12 +20,14 @@ def compute_style_loss(current_feature_maps, style_layers, target_style_represen
     ]
     
     style_loss = 0.0
-    for gram_target, gram_current in zip(target_style_representations, current_style_representation):
-        style_loss += torch.nn.functional.mse_loss(gram_target, gram_current)
+    
+    for layer, gram_target in zip(style_layers, target_style_representations):
+        gram_current = gram_matrix(current_feature_maps[layer])
+        style_loss += torch.nn.functional.mse_loss(gram_current, gram_target)
         
     # print(style_loss)        
     
-    style_loss /= len(current_style_representation)
+    style_loss /= len(style_layers)
     return style_loss
 
 def compute_content_loss(content_feature_maps, current_feature_maps, content_layer):

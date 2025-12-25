@@ -18,10 +18,14 @@ def stylize(config):
     
     transformer_net.eval().to(device)
     
+    # Weight check
+    # for k, v in state_dict.items():
+    #     print(k, v.abs().mean())
+    
     start_time = time.time()
     with torch.no_grad():
-        content_image_path = os.path.join("./data/content-images", config["content_image"])
-        content_image = prepare_image(content_image_path, device, config['image_size'], config['batch_size'])
+        content_image_path = os.path.join("./src/data/content-images", config["content_image"])
+        content_image = prepare_image(content_image_path, device, config['image_size'], 1)
         
         # feedforward
         stylized_image = transformer_net(content_image)
@@ -37,7 +41,7 @@ if __name__ == '__main__':
     
     parser.add_argument("--model_name", type=str, help="Name of the pretrained model to load", default="style_model.pth")
     parser.add_argument("--content_image", type=str, help="Content image name", default=None, required=True)
-    parser.add_argument("--output_path", type=str, help="Output image path", default="./data/output")
+    parser.add_argument("--output_path", type=str, help="Output image path", default="./src/data/output")
     parser.add_argument("--output_image", type=str, help="Output image name", required=True)
 
     args = parser.parse_args()
@@ -47,6 +51,9 @@ if __name__ == '__main__':
     for arg in vars(args):
         config[arg] = getattr(args, arg)
         
-    config["pretrained_models_path"] = "./data/pretrained"
+    image_size = 256      
+        
+    config['image_size'] = image_size        
+    config["pretrained_models_path"] = "./src/models/pretrained"
     
     stylize(config)        

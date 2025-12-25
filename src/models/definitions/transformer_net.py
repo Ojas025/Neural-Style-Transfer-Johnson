@@ -70,7 +70,8 @@ class TransformerNet(nn.Module):
         x = self.upsample2(x)
         x = self.relu(self.instance5(self.conv5(x)))
 
-        x = self.tanh(self.conv6(x))
+        # x = self.tanh(self.conv6(x))
+        x = self.conv6(x)
         
         return x
         

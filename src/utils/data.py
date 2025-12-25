@@ -30,12 +30,7 @@ class NSTDataset(Dataset):
         
         # self.target_height = int(h * (target_width / w))
         
-        self.transform = transforms.Compose([
-            transforms.Resize(self.target_width),
-            transforms.CenterCrop(self.target_width),
-            transforms.ToTensor(),
-            transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD)
-        ])
+        self.transform = get_transform(self.target_width)
     
     def __len__(self):
         return len(self.img_paths)
