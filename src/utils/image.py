@@ -1,9 +1,10 @@
-import cv2 as cv
 import os
 from PIL import Image
 from torchvision import transforms
 import torch
 import numpy as np
+from streamlit.runtime.uploaded_file_manager import UploadedFile
+import io
 
 IMAGENET_MEAN = np.array([0.485,0.456,0.406])
 IMAGENET_STD = np.array([0.229,0.224,0.225])
@@ -56,9 +57,17 @@ def get_transform(target_width):
     return image   
     
 
-def prepare_image(path, device, shape, batch_size):
+def prepare_image(input_source, device, shape, batch_size):
     # image = load_image(path, shape)
-    image = Image.open(path).convert("RGB")
+    
+    if isinstance(input_source, str):
+        image = Image.open(input_source).convert("RGB")
+    elif isinstance(input_source, UploadedFile):
+        input_source.seek(0)
+        image_bytes = input_source.read()
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    elif isinstance(input_source, Image.Image):
+        image = input_source.convert("RGB")
     
     
     transform = get_transform(shape)
@@ -69,7 +78,7 @@ def prepare_image(path, device, shape, batch_size):
     
     return image.to(device)
 
-def save_image(image, config):
+def detransform(image):
     image = image.squeeze(0)
 
     image = image.detach().cpu().float()
@@ -83,9 +92,20 @@ def save_image(image, config):
     
     image = transforms.ToPILImage()(image)
     
+    return image
+
+def save_image(image, config):
+    image = detransform(image)
+    
     os.makedirs(config['output_path'], exist_ok=True)
     output_path = os.path.join(config["output_path"], config["output_image"])
     
     image.save(output_path)
 
     print("Stylized image saved at: ", output_path)
+    
+def PIL_to_bytes(image, format="PNG"):
+    buffer = io.BytesIO()
+    image.save(buffer, format=format)   
+    buffer.seek(0)
+    return buffer.getvalue()

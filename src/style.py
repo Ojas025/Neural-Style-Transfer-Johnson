@@ -7,7 +7,7 @@ import torch
 from models.definitions.transformer_net import TransformerNet
 from utils.image import *
 
-def stylize(config):
+def stylize(config, uploaded_image=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     transformer_net = TransformerNet().to(device)
@@ -24,16 +24,22 @@ def stylize(config):
     
     start_time = time.time()
     with torch.no_grad():
-        content_image_path = os.path.join("./src/data/content-images", config["content_image"])
-        content_image = prepare_image(content_image_path, device, config['image_size'], 1)
+        if uploaded_image is None:
+            content_image_path = os.path.join("./src/data/content-images", config["content_image"])
+            content_image = prepare_image(content_image_path, device, config['image_size'], 1)
+        
+        content_image = prepare_image(uploaded_image, device, config['image_size'], 1)
         
         # feedforward
         stylized_image = transformer_net(content_image)
 
-        save_image(stylized_image, config)
+        if uploaded_image is None:
+            save_image(stylized_image, config)
     
     print("Image Stylized")
-    print(f"FeedForward time taken: {time.time() - start_time}")        
+    print(f"FeedForward time taken: {time.time() - start_time}")   
+    
+    return stylized_image     
 
 if __name__ == '__main__':
     
