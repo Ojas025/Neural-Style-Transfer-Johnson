@@ -11,19 +11,19 @@ def compute_total_variation_loss(feature_maps):
     
     return (torch.sum(horizontal_difference) + torch.sum(vertical_difference)) / batch_size
 
-def compute_style_loss(current_feature_maps, style_layers, target_style_representations):
+def compute_style_loss(current_feature_maps, style_layers, target_style_representations, style_weights):
     # calculate gram matrix for current_batch
-    current_style_representation = [
-        gram_matrix(current_feature_maps[layer])
-        for layer in style_layers
+    # current_style_representation = [
+    #     gram_matrix(current_feature_maps[layer])
+    #     for layer in style_layers
         
-    ]
+    # ]
     
     style_loss = 0.0
     
-    for layer, gram_target in zip(style_layers, target_style_representations):
+    for layer, gram_target, w in zip(style_layers, target_style_representations, style_weights):
         gram_current = gram_matrix(current_feature_maps[layer])
-        style_loss += torch.nn.functional.mse_loss(gram_current, gram_target)
+        style_loss += w * torch.nn.functional.mse_loss(gram_current, gram_target.expand_as(gram_current))
         
     # print(style_loss)        
     

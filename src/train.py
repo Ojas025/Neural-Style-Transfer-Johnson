@@ -34,6 +34,7 @@ def train(config):
         style_feature_maps = perceptual_loss_net(style_image)
     
     style_layers = ["relu1_2", "relu2_2", "relu3_3", "relu4_3"]
+    style_layer_weights = [0.5, 1.0, 2.0, 4.0]
     content_layer = "relu2_2"
     
     # COMPUTE GRAM MATRICES FOR STYLE IMAGE
@@ -69,7 +70,7 @@ def train(config):
                 content_loss = compute_content_loss(content_feature_maps, current_feature_maps, content_layer)
                 
                 # get style loss
-                style_loss = compute_style_loss(current_feature_maps, style_layers, target_style_representations)
+                style_loss = compute_style_loss(current_feature_maps, style_layers, target_style_representations, style_layer_weights)
                 
                 # calculate total variation loss
                 total_variation_loss = compute_total_variation_loss(current_batch)
@@ -96,7 +97,7 @@ def train(config):
                 #     print("Grad magnitude:", total_grad)
                 #     print()
                 
-                if batch % 500 == 0:
+                if batch % 1000 == 0:
                     with torch.no_grad():
                         transformer_net.eval()
                         preview_output = transformer_net(preview_image)
@@ -122,7 +123,7 @@ def train(config):
     except KeyboardInterrupt:
         print("Keyboard interruption. Saving model...")
 
-        pretrained_model_path = "./src/data/pretrained/style_model.pth"
+        pretrained_model_path = f"./src/models/pretrained/{style_image.split('.')[0]}.pth"
         os.makedirs(os.path.dirname(pretrained_model_path), exist_ok=True)
         
         torch.save(transformer_net.state_dict(), pretrained_model_path)
@@ -136,7 +137,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--style_image', type=str, help='Style Image Name', default='starry_night.jpg')
     parser.add_argument('--content_weight', type=float, help='Weight factor for content loss', default=1e0)
-    parser.add_argument('--style_weight', type=float, help='Weight factor for style loss', default=6e5)
+    parser.add_argument('--style_weight', type=float, help='Weight factor for style loss', default=4e5)
     parser.add_argument('--total_variation_weight', type=float, help='Weight factor for total variation loss', default=1e-6)
     parser.add_argument('--num_epochs', type=int, help='Number of training epochs', default=2)
     parser.add_argument('--subset_size', type=int, help='Subset size to use from MS COCO dataset', default=None)

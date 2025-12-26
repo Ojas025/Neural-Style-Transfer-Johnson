@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+from streamlit_image_comparison import image_comparison
 
 from style import *
 
@@ -11,10 +12,7 @@ st.title("Neural Style Transfer")
 
 choice = st.selectbox("Select a model", models)
 
-input_image = st.file_uploader("Upload image to stylize")
-
-if input_image:
-    st.image(input_image, width=400, caption="Input image")
+input_image = st.file_uploader("Upload image to stylize", type=['jpg', 'png'])
 
 button = st.button("Stylize", use_container_width=True)
 
@@ -27,13 +25,27 @@ if button:
             'content_image': 'input.jpg',
             'output_path': './src/data/output',
             'output_image': f'{choice}_output.jpg',
-            'image_size': 256,
+            'image_size': 512,
             'pretrained_models_path': './src/models/pretrained'
         }, input_image)        
 
 if stylized_image is not None:
     stylized_image = detransform(stylized_image)
-    st.image(stylized_image, caption="Stylized Image", width=400)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.image(input_image, caption="Original")
+        
+    with col2:
+        st.image(PIL_to_bytes(stylized_image), caption="Stylized Image", width=400)   
+        
+    image_comparison(
+        img1=input_image,
+        img2=stylized_image,
+        label1="Original",
+        label2="Stylized"
+    )           
     
     st.download_button(
         label="Download stylized image",

@@ -3,20 +3,26 @@ import argparse
 import time
 
 import torch
+import streamlit as st
 
 from models.definitions.transformer_net import TransformerNet
 from utils.image import *
 
-def stylize(config, uploaded_image=None):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+@st.cache_resource
+def load_model(model_path, device):
     transformer_net = TransformerNet().to(device)
     
     # Load model state
-    state_dict = torch.load(os.path.join(config["pretrained_models_path"], config["model_name"]))
+    state_dict = torch.load(model_path)
     transformer_net.load_state_dict(state_dict, strict=True)
     
     transformer_net.eval().to(device)
+    return transformer_net
+
+def stylize(config, uploaded_image=None):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    transformer_net = load_model(os.path.join(config["pretrained_models_path"], config["model_name"]), device)
     
     # Weight check
     # for k, v in state_dict.items():
