@@ -22,7 +22,8 @@ def load_model(model_path, device):
 def stylize(config, uploaded_image=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    transformer_net = load_model(os.path.join(config["pretrained_models_path"], config["model_name"]), device)
+    model_path = os.path.join(os.path.dirname(__file__), "models", "pretrained", config["model_name"])
+    transformer_net = load_model(model_path, device)
     
     # Weight check
     # for k, v in state_dict.items():
@@ -66,6 +67,6 @@ if __name__ == '__main__':
     image_size = 256      
         
     config['image_size'] = image_size        
-    config["pretrained_models_path"] = "./src/models/pretrained"
+    config["pretrained_models_path"] = "src/models/pretrained"
     
     stylize(config)        
