@@ -13,7 +13,7 @@ def load_model(model_path, device):
     transformer_net = TransformerNet().to(device)
     
     # Load model state
-    state_dict = torch.load(model_path)
+    state_dict = torch.load(model_path, map_location=device)
     transformer_net.load_state_dict(state_dict, strict=True)
     
     transformer_net.eval().to(device)
